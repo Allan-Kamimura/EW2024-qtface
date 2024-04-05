@@ -1,7 +1,7 @@
 # How to Run
-1. Clone repo
+1. Get the docker-compose file
     ```
-    git clone https://github.com/Allan-Kamimura/EW2024-qtface.git
+    wget https://raw.githubusercontent.com/Allan-Kamimura/EW2024-qtface/main/face.yml
     ```
 
 2. Run main
