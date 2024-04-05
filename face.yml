@@ -35,7 +35,7 @@ services:
       - /dev:/dev
       - /tmp:/tmp
       - /run/udev/:/run/udev/
-      - /home/torizon/:/home/torizon/logs/
+      - /home/torizon/:/home/torizon/
     device_cgroup_rules:
       - 'c 4:* rmw'
       - 'c 13:* rmw'
