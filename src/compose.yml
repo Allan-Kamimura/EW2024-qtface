@@ -1,0 +1,80 @@
+version: '3'
+
+services:
+  selfbalancingbot:
+    image: gabs28/selfbalancingbot:latest
+    container_name: selfbalancingbot
+    privileged: true
+    restart: always
+    cap_add:
+      - CAP_SYS_TTY_CONFIG
+      - SYS_RAWIO
+    volumes:
+      - /dev:/dev
+      - /tmp:/tmp
+    devices:
+      - "/dev/mem:/dev/mem"
+    environment:
+      REMOTE_ADDRESS: "ws://192.168.100.161:8001"
+      UI_ADDRESS: "ws://0.0.0.0:8000"
+    stdin_open: true
+    tty: true
+    pull_policy: always
+
+  weston:
+    image: torizon/weston-vivante:3
+    container_name: weston
+    restart: always
+    environment:
+      - ACCEPT_FSL_EULA=1
+      - ENABLE_VNC=0
+    network_mode: host
+    cap_add:
+      - CAP_SYS_TTY_CONFIG
+    volumes:
+      - /dev:/dev
+      - /tmp:/tmp
+      - /run/udev/:/run/udev/
+    device_cgroup_rules:
+      - 'c 4:* rmw'
+      - 'c 13:* rmw'
+      - 'c 199:* rmw'
+      - 'c 226:* rmw'
+
+  face:
+    image: allanktoradex/qt-face-vivante-telemetry:latest
+    container_name: qt-face
+    command: ["bash", "-c", ". .venv/bin/activate && python3 src/main.py --address ws://0.0.0.0:8000 --v1 -7 --v2 -3 --v3 0 --v4 3 --v5 7 --stepsIn10s 10 --delaytime 8000"]
+    restart: always
+    environment:
+      - ACCEPT_FSL_EULA=1
+    network_mode: host
+    cap_add:
+      - CAP_SYS_TTY_CONFIG
+    volumes:
+      - /dev:/dev
+      - /tmp:/tmp
+      - /run/udev/:/run/udev/
+      - /home/torizon/:/home/torizon/
+    device_cgroup_rules:
+      - 'c 4:* rmw'
+      - 'c 13:* rmw'
+      - 'c 199:* rmw'
+      - 'c 226:* rmw'
+    depends_on:
+      - weston
+    pull_policy: always
+
+  node-red:
+    image: gabs28/node-red-semilimes-ewdemo24:latest
+    container_name: node-red-semilimes-ewdemo24
+    restart: always
+    ports:
+      - "1880:1880"
+    stdin_open: true
+    tty: true
+    volumes:
+      - nodered_data:/data    
+
+volumes:
+  nodered_data:
