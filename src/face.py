@@ -96,13 +96,13 @@ class FaceWidget(QWidget):
         self.delay.start(self.delay_time)
 
         self.is_conected = False
-        self.websocket = QWebSocket()
-        self.websocket.connected.connect(self.on_connected)
-        self.websocket.disconnected.connect(self.on_disconnected)
-        self.websocket.textMessageReceived.connect(self.on_message_received)
+        #self.websocket = QWebSocket()
+        #self.websocket.connected.connect(self.on_connected)
+        #self.websocket.disconnected.connect(self.on_disconnected)
+        #self.websocket.textMessageReceived.connect(self.on_message_received)
 
-        self.reconnect_timer = QTimer()
-        self.reconnect_timer.timeout.connect(self.try_reconnect)
+        #self.reconnect_timer = QTimer()
+        #self.reconnect_timer.timeout.connect(self.try_reconnect)
         logging.info("Init done")
 
     def setupFaceParametersStatic(self):
@@ -335,7 +335,7 @@ class FaceWidget(QWidget):
 
         self.url = url
         logging.info(f"Connecting to WebSocket server: {url}")
-        self.websocket.open(QUrl(url))
+        #self.websocket.open(QUrl(url))
 
     def try_reconnect(self):
         random_expression = random.choice([self.happy, self.sad, self.angry, self.sapecao])
@@ -344,12 +344,13 @@ class FaceWidget(QWidget):
 
         url = self.url
         logging.warning(f"reConnecting to WebSocket server: {url}")
-        self.websocket.open(QUrl(url))
+        #self.websocket.open(QUrl(url))
 
     @Slot(str)
     def send_message(self, message):
-        self.websocket.sendTextMessage(message)
-
+        pass
+        #self.websocket.sendTextMessage(message)
+        
     @Slot()
     def on_connected(self):
         logging.warning("WebSocket connected")
@@ -366,6 +367,7 @@ class FaceWidget(QWidget):
     def on_message_received(self, message):
         try:
             telemetry_dict = json.loads(message)
+            print(message)
 
             if "velocity" in telemetry_dict.keys():
                 velocity = telemetry_dict.get("velocity")
