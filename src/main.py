@@ -1,6 +1,7 @@
 from PySide2.QtWidgets import QApplication
 
 from face import FaceWidget
+from wsserver import myWebSocketServer
 
 import sys
 import asyncio
@@ -25,58 +26,6 @@ def parse_arguments():
     parser.add_argument("--delaytime" , type = float, default =  8000         , help = "--|v1|v2|v3|v4|v5|--")
     return parser.parse_args()
 
-class Signal:
-    def __init__(self):
-        self.__subscribers = []
-
-    def connect(self, slot):
-        self.__subscribers.append(slot)
-
-    def emit(self, *args, **kwargs):
-        for subscriber in self.__subscribers:
-            subscriber(*args, **kwargs)
-
-my_signal = Signal()
-
-def my_slot_function(message, additional_info=None):
-    print(f"Signal received with message: {message}")
-
-
-async def send_control_instructions():
-    print("Sending control instructions to any connected robot...")
-    control_message = {
-        "command": "back",
-        "args": {}
-    }
-    for client in connected_clients:
-        asyncio.create_task(client.send(json.dumps(control_message)))
-
-async def handler(websocket, path):
-    global connected_clients
-    client_ip, client_port = websocket.remote_address
-    print(f"New client connected: {client_ip}:{client_port}")
-
-    # Connect the slot to the signal   
-    connected_clients.add(websocket)
-    try:
-        while True:
-            message = await websocket.recv()
-            my_signal.emit(message)
-            #print(f"Received telemetry message from {client_ip}: {message}")
-    finally:
-        print(f"Client disconnected: {client_ip}:{client_port}")
-        connected_clients.remove(websocket)
-
-async def start_server(ip, port):
-    async with websockets.serve(handler, ip, port):
-        print(f"Server started on {ip}:{port}")
-        await asyncio.Future()  # Run forever
-
-async def send_command():
-    while True:
-        await asyncio.sleep(7)
-        await send_control_instructions() 
-
 async def main():
     args = parse_arguments()
     address = args.address.split(":")
@@ -95,12 +44,13 @@ async def main():
     else:
         face_widget.showFullScreen()
 
-    client = face_widget
-    client.startConnection(f"ws://{ip}:{port}")
-    my_signal.connect(my_slot_function)
+    server = myWebSocketServer(ip, port)
+
+    server.listener.on_message.connect(face_widget.on_message_received)
+
     # Example sending a message
-    client.send_message("Hello from QT Robot!")
-        
+    server.send_message("Hello from QT Robot!")
+    
     sys.exit(app.exec_())
 
 if __name__ == "__main__":

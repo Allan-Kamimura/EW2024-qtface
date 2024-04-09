@@ -31,6 +31,7 @@ RUN apt-get update && \
         python3-pyside2.qtgui \
         python3-pyside2.qtcore \
         python3-pyside2.qtwebsockets \
+        python3-pyside2.qtnetwork \
         # Wayland
         qtwayland5 \
         # Miscellaneous

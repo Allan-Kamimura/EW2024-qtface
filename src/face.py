@@ -101,8 +101,14 @@ class FaceWidget(QWidget):
         #self.websocket.disconnected.connect(self.on_disconnected)
         #self.websocket.textMessageReceived.connect(self.on_message_received)
 
+
+        self.random_timer = QTimer()
+        self.random_timer.timeout.connect(self.randomExpression)
+        self.random_timer.start(5000)
+
         #self.reconnect_timer = QTimer()
         #self.reconnect_timer.timeout.connect(self.try_reconnect)
+
         logging.info("Init done")
 
     def setupFaceParametersStatic(self):
@@ -649,6 +655,12 @@ class FaceWidget(QWidget):
         self.interpolatePositions()
 
         logging.info(f"Set expression to ({self.brown_state}, {self.blink_state}, {self.eye_state }, {self.mouth_state}, {self.pupil_state})")
+
+    @Slot()
+    def randomExpression(self):
+        random_expression = random.choice([self.happy, self.sad, self.angry, self.sapecao])
+
+        self.getExpression(random_expression)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
