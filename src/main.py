@@ -7,8 +7,11 @@ import sys
 import asyncio
 import argparse  # Import the argparse module
 import threading
+import asyncio, websockets, json
 
 test_mode = False
+
+connected_clients = set()
 
 # Function to parse command-line arguments
 def parse_arguments():
@@ -23,12 +26,15 @@ def parse_arguments():
     parser.add_argument("--delaytime" , type = float, default =  8000         , help = "--|v1|v2|v3|v4|v5|--")
     return parser.parse_args()
 
-
-
 async def main():
     args = parse_arguments()
     address = args.address.split(":")
     ip, port = address[0], int(address[1])
+
+    await asyncio.gather(
+        start_server(ip, port),
+        send_command(),
+    )
 
     app = QApplication(sys.argv)
     face_widget = FaceWidget(args.v1, args.v2, args.v3, args.v4, args.v5, args.stepsIn10s, args.delaytime)
