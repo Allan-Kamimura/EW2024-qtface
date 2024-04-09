@@ -6,7 +6,7 @@
 
 2. Run main
     ```
-    docker-compose -f qt-face.yml up -d
+    docker compose -f qt-face.yml up -d
     ```
 
 3. (optional) Run with parameters, those are the default values

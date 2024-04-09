@@ -101,7 +101,6 @@ class FaceWidget(QWidget):
         #self.websocket.disconnected.connect(self.on_disconnected)
         #self.websocket.textMessageReceived.connect(self.on_message_received)
 
-
         self.random_timer = QTimer()
         self.random_timer.timeout.connect(self.randomExpression)
         self.random_timer.start(5000)

@@ -1,13 +1,11 @@
 from PySide2.QtWidgets import QApplication
 
-from face import FaceWidget
+from face     import FaceWidget
 from wsserver import myWebSocketServer
 
 import sys
 import asyncio
 import argparse  # Import the argparse module
-import threading
-import asyncio, websockets, json
 
 test_mode = False
 
