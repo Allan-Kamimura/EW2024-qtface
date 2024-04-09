@@ -1,6 +1,7 @@
 from PySide2.QtWidgets import QApplication
 
 from face import FaceWidget
+from wsserver import myWebSocketServer
 
 import sys
 import asyncio
@@ -22,6 +23,8 @@ def parse_arguments():
     parser.add_argument("--delaytime" , type = float, default =  8000         , help = "--|v1|v2|v3|v4|v5|--")
     return parser.parse_args()
 
+
+
 async def main():
     args = parse_arguments()
     address = args.address.split(":")
@@ -35,12 +38,13 @@ async def main():
     else:
         face_widget.showFullScreen()
 
-    client = face_widget
-    client.startConnection(f"ws://{ip}:{port}")
+    server = myWebSocketServer(ip, port)
+
+    server.listener.on_message.connect(face_widget.on_message_received)
 
     # Example sending a message
-    client.send_message("Hello from QT Robot!")
-        
+    server.send_message("Hello from QT Robot!")
+    
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
