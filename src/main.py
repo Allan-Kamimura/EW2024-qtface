@@ -31,11 +31,6 @@ async def main():
     address = args.address.split(":")
     ip, port = address[0], int(address[1])
 
-    await asyncio.gather(
-        start_server(ip, port),
-        send_command(),
-    )
-
     app = QApplication(sys.argv)
     face_widget = FaceWidget(args.v1, args.v2, args.v3, args.v4, args.v5, args.stepsIn10s, args.delaytime)
 
