@@ -57,6 +57,9 @@ RUN python3 -m venv ${APP_ROOT}/.venv --system-site-packages
 
 # Install pip packages on venv
 COPY requirements-release.txt /requirements-release.txt
+COPY weston.ini /etc/xdg/weston/
+COPY weston.ini /etc/xdg/weston-dev/
+
 RUN . ${APP_ROOT}/.venv/bin/activate
 
 USER torizon

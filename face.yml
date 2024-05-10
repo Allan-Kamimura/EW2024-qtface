@@ -2,7 +2,7 @@ version: '3'
 
 services:
   weston:
-    image: torizon/weston-vivante:3
+    image: torizon/weston-vivante:
     container_name: weston
     restart: always
     environment:
