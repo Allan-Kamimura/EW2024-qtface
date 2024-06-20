@@ -3,9 +3,9 @@ import sys
 import json
 import random
 
-from PySide2.QtGui import QPainter, QColor, QPen
+from PySide2.QtGui import QPainter, QColor, QPen, QIcon, QGuiApplication, QInputMethod
 from PySide2.QtCore import Qt, QUrl, QTimer, QPoint, QRectF, QSize, QPointF, Slot
-from PySide2.QtWidgets import QApplication, QWidget, QPushButton
+from PySide2.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QVBoxLayout, QLabel, QDialog
 from PySide2.QtWebSockets import QWebSocket
 
 from math import sin, cos
@@ -18,6 +18,7 @@ logging.basicConfig(
     level=logging.INFO, 
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
+
 
 # CONTROL PANEL
 # ----------------------------#
@@ -58,13 +59,19 @@ class FaceWidget(QWidget):
         self.button3 = QPushButton('Eyebrow', self)
         self.button4 = QPushButton('Eye', self)
         self.button5 = QPushButton('Maluco', self)
+        self.button6 = QPushButton('', self)
 
         self.button1.setGeometry(0, 0, 80, 20)
         self.button2.setGeometry(0, 40, 80, 20)
         self.button3.setGeometry(0, 80, 80, 20)
         self.button4.setGeometry(0, 120, 80, 20)
         self.button5.setGeometry(0, 160, 80, 20)
+        self.button6.setGeometry(900, 20, 100, 100)
 
+        icon = QIcon('src/assets/wifi-conf-border.png')
+        self.button6.setIcon(icon)
+        self.button6.setIconSize(QSize(100,100))
+        
         # self.button1.clicked.connect(self.changeEyelid)
         # self.button2.clicked.connect(self.changeExpression)
         # self.button3.clicked.connect(self.changeEyebrow)
@@ -76,12 +83,14 @@ class FaceWidget(QWidget):
         self.button3.clicked.connect(lambda: self.getExpression(self.angry))
         self.button4.clicked.connect(lambda: self.getExpression(self.sapecao))
         self.button5.clicked.connect(self.goMaluco)
+        self.button6.clicked.connect(self.open_wifi_config)
 
         self.button1.setStyleSheet("background-color: transparent; border: 0px solid black; font-size: 1px;")
         self.button2.setStyleSheet("background-color: transparent; border: 0px solid black; font-size: 1px;")
         self.button3.setStyleSheet("background-color: transparent; border: 0px solid black; font-size: 1px;")
         self.button4.setStyleSheet("background-color: transparent; border: 0px solid black; font-size: 1px;")
         self.button5.setStyleSheet("background-color: transparent; border: 0px solid black; font-size: 1px;")
+        self.button6.setStyleSheet("background-color: transparent; border: 0px solid black; font-size: 1px;")
         
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateScreen)
@@ -101,8 +110,13 @@ class FaceWidget(QWidget):
         #self.websocket.disconnected.connect(self.on_disconnected)
         #self.websocket.textMessageReceived.connect(self.on_message_received)
 
+        self.random_timer = QTimer()
+        self.random_timer.timeout.connect(self.randomExpression)
+        self.random_timer.start(5000)
+
         #self.reconnect_timer = QTimer()
         #self.reconnect_timer.timeout.connect(self.try_reconnect)
+
         logging.info("Init done")
 
     def setupFaceParametersStatic(self):
@@ -650,9 +664,67 @@ class FaceWidget(QWidget):
 
         logging.info(f"Set expression to ({self.brown_state}, {self.blink_state}, {self.eye_state }, {self.mouth_state}, {self.pupil_state})")
 
+    @Slot()
+    def randomExpression(self):
+        random_expression = random.choice([self.happy, self.sad, self.angry, self.sapecao])
+
+        self.getExpression(random_expression)
+
+    @Slot()
+    def open_wifi_config(self):
+        # Calculate position for WiFi configuration dialog
+        main_window_center = self.geometry().center()
+        wifi_dialog_center = self.mapToGlobal(main_window_center)
+        # Create and show WiFi configuration dialog
+        wifi_dialog = WiFiConfigDialog(self)
+        wifi_dialog.move(wifi_dialog_center - wifi_dialog.rect().center())
+        wifi_dialog.exec_()
+
+class WiFiConfigDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        # Set window title
+        self.setWindowTitle("WiFi Configuration")
+        self.setModal(True)  # Set the dialog as modal
+        self.setAttribute(Qt.WA_InputMethodEnabled)
+        print(QGuiApplication.inputMethod().show())
+        # Set window size and position in the middle of the screen
+        self.setFixedSize(600, 400)
+
+        # Add widgets
+        layout = QVBoxLayout(self)
+
+        # Label for WiFi Configuration
+        wifi_label = QLabel("WiFi Configuration", self)
+        layout.addWidget(wifi_label)
+
+        # Text field for WiFi name
+        self.wifi_name_edit = QLineEdit(self)
+        self.wifi_name_edit.setPlaceholderText("Enter WiFi Name")
+        layout.addWidget(self.wifi_name_edit)
+
+        # Text field for WiFi password
+        self.wifi_password_edit = QLineEdit(self)
+        self.wifi_password_edit.setPlaceholderText("Enter WiFi Password")
+        layout.addWidget(self.wifi_password_edit)
+
+        # Add button
+        button = QPushButton("Connect", self)
+        button.clicked.connect(self.save_config)
+        layout.addWidget(button)
+
+    def save_config(self):
+        # Implement saving WiFi configuration here
+        wifi_name = self.wifi_name_edit.text()
+        wifi_password = self.wifi_password_edit.text()
+        print("WiFi Name:", wifi_name)
+        print("WiFi Password:", wifi_password)
+
 if __name__ == "__main__":
+    test_mode  = True
     app = QApplication(sys.argv)
-    face_widget = FaceWidget()
+    face_widget = FaceWidget(v1=-7,v2=-3 ,v3=0, v4=3, v5=7)
     if test_mode:
         face_widget.show()
     else:

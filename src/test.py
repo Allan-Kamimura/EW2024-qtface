@@ -1,94 +1,72 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
-from PyQt5.QtCore import QRectF, QPropertyAnimation, QEasingCurve, Qt, pyqtProperty
-from PyQt5.QtGui import QPainter, QColor
+from PySide2.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QDialog, QLabel, QLineEdit
+from PySide2.QtGui import QIcon
+from PySide2.QtCore import QSize
+class MainWindow(QWidget):
+    def __init__(self):
+        super().__init__()
 
-class EyelidWidget(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+        # Set window title
+        self.setWindowTitle("Main Window")
 
-        self.eye_center = (100, 100)
-        self.eye_radius = 50
-        self.blink_up = 10
-        self.blink_down = 10
-        self.eyelid_color = QColor(Qt.gray)
+        # Set window size
+        self.setGeometry(100, 100, 400, 300)
 
-        # Initial start and span angles
-        self._start_angle = 0
-        self._span_angle = 180
+        # Add layout
+        layout = QVBoxLayout(self)
 
-        # Create animation objects for custom properties
-        self.start_angle_animation = QPropertyAnimation(self, b"_start_angle")
-        self.span_angle_animation = QPropertyAnimation(self, b"_span_angle")
+        # Add button to open WiFi configuration popup
+        self.config_button = QPushButton("Open WiFi Configuration", self)
+        self.config_button.clicked.connect(self.open_wifi_config)
+        layout.addWidget(self.config_button)
 
-        # Set animation duration and easing curve
-        self.start_angle_animation.setDuration(1000)
-        self.span_angle_animation.setDuration(1000)
-        self.start_angle_animation.setEasingCurve(QEasingCurve.Linear)
-        self.span_angle_animation.setEasingCurve(QEasingCurve.Linear)
+    def open_wifi_config(self):
+        # Create and show WiFi configuration dialog
+        wifi_dialog = WiFiConfigDialog()
+        wifi_dialog.exec_()
 
-        # Connect finished signals to animation loop
-        self.start_angle_animation.finished.connect(self.animate)
-        self.span_angle_animation.finished.connect(self.animate)
+class WiFiConfigDialog(QDialog):
+    def __init__(self):
+        super().__init__()
 
-        # Start the animation loop
-        self.animate()
+        # Set window title
+        self.setWindowTitle("WiFi Configuration")
 
-    # Define custom properties for animation
-    def _get_start_angle(self):
-        return self._start_angle
+        # Set window size and position in the middle of the screen
+        self.setFixedSize(300, 200)
+        screen_geometry = QApplication.desktop().screenGeometry()
+        self.move(screen_geometry.center() - self.rect().center())
 
-    def _set_start_angle(self, value):
-        self._start_angle = value
-        self.update()
+        # Add widgets
+        layout = QVBoxLayout(self)
 
-    start_angle = pyqtProperty(int, _get_start_angle, _set_start_angle)
+        # Label for WiFi Configuration
+        wifi_label = QLabel("WiFi Configuration", self)
+        layout.addWidget(wifi_label)
 
-    def _get_span_angle(self):
-        return self._span_angle
+        # Text field for WiFi name
+        self.wifi_name_edit = QLineEdit(self)
+        self.wifi_name_edit.setPlaceholderText("Enter WiFi Name")
+        layout.addWidget(self.wifi_name_edit)
 
-    def _set_span_angle(self, value):
-        self._span_angle = value
-        self.update()
+        # Text field for WiFi password
+        self.wifi_password_edit = QLineEdit(self)
+        self.wifi_password_edit.setPlaceholderText("Enter WiFi Password")
+        layout.addWidget(self.wifi_password_edit)
 
-    span_angle = pyqtProperty(int, _get_span_angle, _set_span_angle)
+        # Add button
+        button = QPushButton("Save", self)
+        button.clicked.connect(self.save_config)
+        layout.addWidget(button)
 
-    def animate(self):
-        # Set random values for start and span angles
-        self.start_angle_animation.setStartValue(0)
-        self.start_angle_animation.setEndValue(360)
-        self.start_angle_animation.start()
-
-        self.span_angle_animation.setStartValue(180)
-        self.span_angle_animation.setEndValue(0)
-        self.span_angle_animation.start()
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-
-        eyelid_rect_top = QRectF(self.eye_center[0] - self.eye_radius - self.eye_radius * 0.25, 
-                                 self.eye_center[1] - self.eye_radius - self.eye_radius * 0.25,
-                                 (self.eye_radius * 1.2) * 2, 
-                                 self.eye_radius + self.blink_up)
-        
-        eyelid_rect_bot = QRectF(self.eye_center[0] - self.eye_radius - self.eye_radius * 0.25, 
-                                 self.eye_center[1] - self.eye_radius + self.eye_radius * 0.75,
-                                 (self.eye_radius * 1.2) * 2, 
-                                 self.eye_radius + self.blink_down)
-
-        painter.setBrush(self.eyelid_color)
-        painter.setPen(Qt.NoPen)
-
-        painter.drawChord(eyelid_rect_top, self.start_angle * 16, self.span_angle * 16)
-        painter.drawChord(eyelid_rect_bot, (-self.start_angle) * 16, (-self.span_angle) * 16)
+    def save_config(self):
+        # Implement saving WiFi configuration here
+        wifi_name = self.wifi_name_edit.text()
+        wifi_password = self.wifi_password_edit.text()
+        print("WiFi Name:", wifi_name)
+        print("WiFi Password:", wifi_password)
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = QMainWindow()
-    eyelid_widget = EyelidWidget()
-    window.setCentralWidget(eyelid_widget)
-    window.setGeometry(100, 100, 300, 200)
-    window.setWindowTitle("Eyelid Animation")
+    app = QApplication([])
+    window = MainWindow()
     window.show()
-    sys.exit(app.exec_())
+    app.exec_()
